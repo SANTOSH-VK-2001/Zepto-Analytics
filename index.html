@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zepto Analytics Dashboard</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Papa Parse CSV Reader -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen font-sans">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-6 shadow-2xl">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-4xl font-bold tracking-tight">Zepto Analytics</h1>
+        <p class="text-purple-200 text-sm mt-1">Comprehensive Data Insights Dashboard</p>
+      </div>
+      <span class="text-purple-200 text-base font-medium">Created by: Santosh Khatate</span>
+    </div>
+  </header>
+
+  <!-- Key Metrics Section -->
+  <section class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Total Potential Revenue Card -->
+      <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow p-6 border-t-4 border-purple-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 font-semibold text-sm uppercase tracking-wide">Total Potential Revenue</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2" id="totalRevenue">₹0</p>
+          </div>
+          <div class="bg-purple-100 rounded-full p-4">
+            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Discount (In Stock) Card -->
+      <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow p-6 border-t-4 border-emerald-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 font-semibold text-sm uppercase tracking-wide">Avg Discount (In Stock)</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2" id="avgDiscountInStock">0%</p>
+          </div>
+          <div class="bg-emerald-100 rounded-full p-4">
+            <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Average Discount (Out of Stock) Card -->
+      <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow p-6 border-t-4 border-red-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 font-semibold text-sm uppercase tracking-wide">Avg Discount (Out of Stock)</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2" id="avgDiscountOutStock">0%</p>
+          </div>
+          <div class="bg-red-100 rounded-full p-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 5v1m0-1c4.418 0 8-1.79 8-4s-3.582-4-8-4-8 1.79-8 4 3.582 4 8 4z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Categories Card -->
+      <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow p-6 border-t-4 border-blue-600">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 font-semibold text-sm uppercase tracking-wide">Total Categories</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2" id="totalCategories">0</p>
+          </div>
+          <div class="bg-blue-100 rounded-full p-4">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Charts Section -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Row 1: Average Discount by Category & Inventory Value -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Average Discount by Category -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-400 px-8 py-6">
+          <h2 class="text-2xl font-bold text-white">Average Discount by Category</h2>
+          <p class="text-purple-100 text-sm mt-1">Distribution across product categories</p>
+        </div>
+        <div class="p-8">
+          <div class="relative h-96 flex items-center justify-center">
+            <canvas id="avgDiscountPie"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Value by Category -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-400 px-8 py-6">
+          <h2 class="text-2xl font-bold text-white">Inventory Value by Category</h2>
+          <p class="text-blue-100 text-sm mt-1">Total inventory worth per category</p>
+        </div>
+        <div class="p-8">
+          <div class="relative h-96 flex items-center justify-center">
+            <canvas id="inventoryBar"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Discount by Product & Discount % Distribution -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Discount % Distribution by Product -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
+        <div class="bg-gradient-to-r from-emerald-600 to-emerald-400 px-8 py-6">
+          <h2 class="text-2xl font-bold text-white">Discount % by Product</h2>
+          <p class="text-emerald-100 text-sm mt-1">Top products with highest discounts</p>
+        </div>
+        <div class="p-8">
+          <div class="relative h-96 flex items-center justify-center">
+            <canvas id="skuDiscountPie"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Status Distribution -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
+        <div class="bg-gradient-to-r from-orange-600 to-orange-400 px-8 py-6">
+          <h2 class="text-2xl font-bold text-white">Stock Status Distribution</h2>
+          <p class="text-orange-100 text-sm mt-1">In Stock vs Out of Stock comparison</p>
+        </div>
+        <div class="p-8">
+          <div class="relative h-96 flex items-center justify-center">
+            <canvas id="stockStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Highest Price Gap -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow mb-8">
+      <div class="bg-gradient-to-r from-red-600 to-red-400 px-8 py-6">
+        <h2 class="text-2xl font-bold text-white">Highest Price Gaps (Top 10)</h2>
+        <p class="text-red-100 text-sm mt-1">Products with maximum difference between MRP and selling price</p>
+      </div>
+      <div class="p-8">
+        <div class="relative h-96 flex items-center justify-center">
+          <canvas id="priceGapChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-8 mt-12 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <p class="text-sm">© 2024 Zepto Analytics Dashboard | Data-driven Insights</p>
+    </div>
+  </footer>
+
+
+    <!-- Scripts -->
+    <script>
+      // Color schemes
+      const purpleGradient = ['#5F259F', '#7B3FC6', '#9A6AD8', '#B18BE0', '#D1B3ED', '#E6D9F7', '#4B1E82', '#6A2FB8', '#8C56D3', '#A97BE8'];
+      const blueGradient = ['#0EA5E9', '#0284C7', '#0369A1', '#075985', '#0C4A6E'];
+      const emeraldGradient = ['#10B981', '#059669', '#047857', '#065F46'];
+      const orangeGradient = ['#F97316', '#EA580C', '#C2410C', '#9A3412'];
+      const redGradient = ['#EF4444', '#DC2626', '#B91C1C', '#7F1D1D'];
+
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: '#374151',
+              boxWidth: 12,
+              font: { size: 12, weight: 'bold' }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 13, weight: 'bold' },
+            bodyFont: { size: 12 },
+            borderColor: '#fff',
+            borderWidth: 1
+          }
+        }
+      };
+
+      // Load and display Total Potential Revenue
+      fetch('Answer/total_potential_revenue.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              if (results.data.length > 0) {
+                const revenue = parseFloat(results.data[0].total_potential_revenue);
+                document.getElementById('totalRevenue').textContent = '₹' + revenue.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+              }
+            }
+          });
+        });
+
+      // Load and display Average Discount percentages by stock status
+      fetch('Answer/avg_percent.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              results.data.forEach(row => {
+                if (row.outofstock === 'False') {
+                  document.getElementById('avgDiscountInStock').textContent = parseFloat(row.avg_percent).toFixed(2) + '%';
+                } else {
+                  document.getElementById('avgDiscountOutStock').textContent = parseFloat(row.avg_percent).toFixed(2) + '%';
+                }
+              });
+            }
+          });
+        });
+
+      // Load Average Discount by Category (Pie Chart)
+      fetch('Answer/AvgDis.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const labels = [];
+              const data = [];
+
+              results.data.forEach(row => {
+                labels.push(row.category);
+                data.push(Number(row.average_discount_percentage));
+              });
+
+              document.getElementById('totalCategories').textContent = labels.length;
+
+              const pieCtx = document.getElementById('avgDiscountPie');
+              new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                  labels: labels,
+                  datasets: [{
+                    data: data,
+                    backgroundColor: purpleGradient,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverBorderWidth: 3
+                  }]
+                },
+                options: {
+                  ...chartOptions,
+                  plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                      ...chartOptions.plugins.legend,
+                      position: 'right'
+                    },
+                    tooltip: {
+                      ...chartOptions.plugins.tooltip,
+                      callbacks: {
+                        label: function(context) {
+                          return `${context.label}: ${Number(context.parsed).toFixed(2)}%`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+
+      // Load Inventory Value by Category (Bar Chart)
+      fetch('Answer/inventory_value.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const labels = [];
+              const data = [];
+
+              results.data.forEach(row => {
+                labels.push(row.category);
+                data.push(Number(row.inventory_value));
+              });
+
+              const barCtx = document.getElementById('inventoryBar');
+              new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                  labels: labels,
+                  datasets: [{
+                    label: 'Inventory Value (₹)',
+                    data: data,
+                    backgroundColor: blueGradient[0],
+                    borderColor: blueGradient[2],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: blueGradient[2]
+                  }]
+                },
+                options: {
+                  ...chartOptions,
+                  indexAxis: 'y',
+                  plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                      ...chartOptions.plugins.legend,
+                      display: true
+                    },
+                    tooltip: {
+                      ...chartOptions.plugins.tooltip,
+                      callbacks: {
+                        label: function(context) {
+                          return `₹${Number(context.parsed.x).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: {
+                        callback: function(value) {
+                          return '₹' + (value / 1000).toFixed(0) + 'K';
+                        },
+                        color: '#6B7280',
+                        font: { size: 11 }
+                      },
+                      grid: { color: '#E5E7EB' }
+                    },
+                    y: {
+                      ticks: { color: '#6B7280', font: { size: 11, weight: 'bold' } },
+                      grid: { display: false }
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+
+      // Load Discount % Distribution by Product (Pie Chart)
+      fetch('Answer/discountpercent.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const productMap = {};
+
+              results.data.forEach(row => {
+                const name = row.name.trim();
+                const discount = Number(row.discountpercent);
+
+                if (!productMap[name]) {
+                  productMap[name] = [];
+                }
+                productMap[name].push(discount);
+              });
+
+              const labels = [];
+              const data = [];
+
+              Object.keys(productMap).forEach(name => {
+                const values = productMap[name];
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                labels.push(name);
+                data.push(Number(avg.toFixed(2)));
+              });
+
+              const skuCtx = document.getElementById('skuDiscountPie');
+              new Chart(skuCtx, {
+                type: 'doughnut',
+                data: {
+                  labels: labels,
+                  datasets: [{
+                    data: data,
+                    backgroundColor: emeraldGradient,
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverBorderWidth: 3
+                  }]
+                },
+                options: {
+                  ...chartOptions,
+                  plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                      ...chartOptions.plugins.legend,
+                      position: 'right'
+                    },
+                    tooltip: {
+                      ...chartOptions.plugins.tooltip,
+                      callbacks: {
+                        label: function(context) {
+                          return `${context.label}: ${Number(context.parsed).toFixed(2)}%`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+
+      // Load Stock Status Distribution (Doughnut Chart)
+      fetch('Answer/avg_percent.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              const labels = [];
+              const data = [];
+
+              results.data.forEach(row => {
+                const status = row.outofstock === 'False' ? 'In Stock' : 'Out of Stock';
+                labels.push(status);
+                data.push(Number(row.avg_percent));
+              });
+
+              const stockCtx = document.getElementById('stockStatusChart');
+              new Chart(stockCtx, {
+                type: 'doughnut',
+                data: {
+                  labels: labels,
+                  datasets: [{
+                    data: data,
+                    backgroundColor: ['#10B981', '#EF4444'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverBorderWidth: 3
+                  }]
+                },
+                options: {
+                  ...chartOptions,
+                  plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                      ...chartOptions.plugins.legend,
+                      position: 'right'
+                    },
+                    tooltip: {
+                      ...chartOptions.plugins.tooltip,
+                      callbacks: {
+                        label: function(context) {
+                          return `${context.label}: ${Number(context.parsed).toFixed(2)}%`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+
+      // Load Highest Price Gap (Horizontal Bar Chart)
+      fetch('Answer/highest_gap.csv')
+        .then(res => res.text())
+        .then(csv => {
+          Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+              // Get top 10 by highest gap
+              const sorted = results.data.sort((a, b) => Number(b.highest_gap) - Number(a.highest_gap)).slice(0, 10);
+              
+              const labels = [];
+              const data = [];
+
+              sorted.forEach(row => {
+                labels.push(row.name.substring(0, 30) + (row.name.length > 30 ? '...' : ''));
+                data.push(Number(row.highest_gap));
+              });
+
+              const gapCtx = document.getElementById('priceGapChart');
+              new Chart(gapCtx, {
+                type: 'bar',
+                data: {
+                  labels: labels,
+                  datasets: [{
+                    label: 'Price Gap (₹)',
+                    data: data,
+                    backgroundColor: redGradient[0],
+                    borderColor: redGradient[2],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: redGradient[2]
+                  }]
+                },
+                options: {
+                  ...chartOptions,
+                  indexAxis: 'y',
+                  plugins: {
+                    ...chartOptions.plugins,
+                    legend: {
+                      ...chartOptions.plugins.legend,
+                      display: true
+                    },
+                    tooltip: {
+                      ...chartOptions.plugins.tooltip,
+                      callbacks: {
+                        label: function(context) {
+                          return `₹${Number(context.parsed.x).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      ticks: {
+                        callback: function(value) {
+                          return '₹' + (value / 100).toFixed(0) + '0';
+                        },
+                        color: '#6B7280',
+                        font: { size: 11 }
+                      },
+                      grid: { color: '#E5E7EB' }
+                    },
+                    y: {
+                      ticks: { color: '#6B7280', font: { size: 10 } },
+                      grid: { display: false }
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+    </script>
+
+
+
+</body>
+</html>
