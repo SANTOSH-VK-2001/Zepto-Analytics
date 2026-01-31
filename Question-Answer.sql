@@ -54,7 +54,29 @@ ORDER BY Total_Inventory_Value DESC
 LIMIT 5;
 
 
+-- 7* Which items are currently outOfStock but have a high historical quantity (sales volume)? (Prioritizes restocking.)
+SELECT name, Category, COUNT(*) AS popularity_score, MAX(mrp) AS price
+FROM zepto
+WHERE outOfStock = TRUE
+GROUP BY name, Category
+ORDER BY popularity_score DESC, price DESC
+LIMIT 15;
 
+-- 8* What is the 'Stock Cover' for each category? (Calculated by comparing availableQuantity against sales trends to see how many days of stock are left.)
+SELECT sku_id, name, category,availablequantity,
+ROUND(availablequantity / NULLIF(quantity / 30.0, 0),1) AS stock_cover_days
+FROM zepto
+WHERE outofstock = FALSE;
+
+-- 9* Which products have high availableQuantity but zero or low movement? (Identifies "dead stock" that is tying up capital.)
+SELECT sku_id, name, category,availablequantity,
+ROUND(availablequantity / NULLIF(quantity / 30.0, 0),1) AS stock_cover_days
+FROM zepto
+WHERE outofstock = FALSE;
+
+-- 10* What percentage of the total catalog is currently outOfStock? (A key KPI for supply chain health.)
+SELECT ROUND (100.0 * SUM(CASE WHEN outofstock THEN 1 ELSE 0 END ) / COUNT(*),2) AS out_of_stock_percentage
+FROM zepto
 
 
 
