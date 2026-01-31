@@ -13,6 +13,8 @@
 
   <!-- Papa Parse CSV Reader -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <!-- Chart.js Data Labels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 
 <body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen font-sans">
@@ -203,8 +205,26 @@
             borderColor: '#fff',
             borderWidth: 1
           }
-        }
-      };
+            },
+            datalabels: {
+              color: '#000',
+              formatter: (value, context) => {
+                const chartType = context.chart.config.type;
+                if (chartType === 'bar') {
+                  return '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+                }
+                if (chartType === 'doughnut' || chartType === 'pie') {
+                  return Number(value).toFixed(2) + '%';
+                }
+                return value;
+              },
+              font: { weight: '600', size: 12 }
+            }
+          }
+      // Register Chart.js Data Labels plugin immediately so charts can use it
+      if (window.Chart && window.ChartDataLabels) {
+        Chart.register(ChartDataLabels);
+      }
 
       // Load and display Total Potential Revenue
       fetch('Answer/total_potential_revenue.csv')
@@ -276,6 +296,10 @@
                   ...chartOptions,
                   plugins: {
                     ...chartOptions.plugins,
+                    datalabels: {
+                      ...chartOptions.plugins.datalabels,
+                      color: '#ffffff'
+                    },
                     legend: {
                       ...chartOptions.plugins.legend,
                       position: 'right'
@@ -312,6 +336,10 @@
               });
 
               const barCtx = document.getElementById('inventoryBar');
+              // compute nice max so labels placed outside won't overflow
+              const maxValInventory = data.length ? Math.max(...data) : 0;
+              const maxScaleInventory = Math.ceil(maxValInventory * 1.1);
+
               new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -331,6 +359,13 @@
                   indexAxis: 'y',
                   plugins: {
                     ...chartOptions.plugins,
+                    datalabels: {
+                      ...chartOptions.plugins.datalabels,
+                      anchor: 'end',
+                      align: 'right',
+                      offset: 8,
+                      clamp: true
+                    },
                     legend: {
                       ...chartOptions.plugins.legend,
                       display: true
@@ -346,6 +381,7 @@
                   },
                   scales: {
                     x: {
+                      max: maxScaleInventory,
                       ticks: {
                         callback: function(value) {
                           return '₹' + (value / 1000).toFixed(0) + 'K';
@@ -413,6 +449,10 @@
                   ...chartOptions,
                   plugins: {
                     ...chartOptions.plugins,
+                    datalabels: {
+                      ...chartOptions.plugins.datalabels,
+                      color: '#ffffff'
+                    },
                     legend: {
                       ...chartOptions.plugins.legend,
                       position: 'right'
@@ -466,6 +506,10 @@
                   ...chartOptions,
                   plugins: {
                     ...chartOptions.plugins,
+                    datalabels: {
+                      ...chartOptions.plugins.datalabels,
+                      color: '#ffffff'
+                    },
                     legend: {
                       ...chartOptions.plugins.legend,
                       position: 'right'
@@ -505,6 +549,10 @@
               });
 
               const gapCtx = document.getElementById('priceGapChart');
+              // compute nice max so labels placed outside won't overflow
+              const maxValGap = data.length ? Math.max(...data) : 0;
+              const maxScaleGap = Math.ceil(maxValGap * 1.1);
+
               new Chart(gapCtx, {
                 type: 'bar',
                 data: {
@@ -524,6 +572,13 @@
                   indexAxis: 'y',
                   plugins: {
                     ...chartOptions.plugins,
+                    datalabels: {
+                      ...chartOptions.plugins.datalabels,
+                      anchor: 'end',
+                      align: 'right',
+                      offset: 8,
+                      clamp: true
+                    },
                     legend: {
                       ...chartOptions.plugins.legend,
                       display: true
@@ -539,6 +594,7 @@
                   },
                   scales: {
                     x: {
+                      max: maxScaleGap,
                       ticks: {
                         callback: function(value) {
                           return '₹' + (value / 100).toFixed(0) + '0';
